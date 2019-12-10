@@ -1,3 +1,5 @@
+import math
+
 input = """.#..#
 .....
 #####
@@ -26,36 +28,38 @@ for i in range(rows):
 
 # print(asteroids)
 
-reachabilityMap = [[len(asteroids) - 1 for j in range(cols)] for i in range(rows)]
+reachabilityMap = [[0 for j in range(cols)] for i in range(rows)]
 
-# compute the shadow made by a2 on the light shed by a1
+# compute if a2 is visible from a1 (there is no a3 in the middle with the same angle)
 for i in range(len(asteroids)):
     for j in range(len(asteroids)):
         if i == j:
             continue
 
-        a1 = asteroids[i]
-        a2 = asteroids[j]
+        a1, a2 = asteroids[i], asteroids[j]
 
+        visible = True
         delta = (a2[0] - a1[0], a2[1] - a1[1])
 
-        # find reduced delta
-        reducedDelta = delta
-        for mcd in range(1, min(abs(delta[0]), abs(delta[1])) + 1):
-            if delta[0]//mcd == delta[0]/mcd and delta[1]//mcd == delta[1]/mcd:
-                reducedDelta = (delta[0]//mcd, delta[1]//mcd)
+        angle = math.atan2(delta[0], delta[1])
+        distance = delta[0] ** 2 + delta[1] ** 2
 
-        k = 1
-        while True:
-            thisDelta = (reducedDelta[0] * k, reducedDelta[1] * k)
-            thisPos = (a2[0] + thisDelta[0], a2[1] + thisDelta[1])
-            # print(delta, reducedDelta, k, thisDelta, thisPos)
-            if thisPos[0] >= rows or thisPos[0] < 0 or thisPos[1] >= cols or thisPos[1] < 0:
+        for k in range(len(asteroids)):
+            if k == i or k == j:
+                continue
+
+            a3 = asteroids[k]
+            delta2 = (a3[0] - a1[0], a3[1] - a1[1])
+            angle2 = math.atan2(delta2[0], delta2[1])
+            distance2 = delta2[0] ** 2 + delta2[1] ** 2
+
+            if angle2 == angle and distance2 < distance:
+                visible = False
                 break
 
-            reachabilityMap[thisPos[0]][thisPos[1]] -= 1
+        if visible:
+            reachabilityMap[a1[0]][a1[1]] += 1
 
-            k += 1
 
 minimum = None
 
@@ -70,3 +74,4 @@ for line in reachabilityMap:
     print("".join([str(c) + " " for c in line]))
 
 print(minimum)
+print(reachabilityMap[minimum[0]][minimum[1]])
