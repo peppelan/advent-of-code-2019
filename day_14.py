@@ -1,4 +1,5 @@
 import collections
+import queue
 
 input = """5 LKQCJ, 1 GDSDP, 2 HPXCL => 9 LVRSZ
 5 HPXCL, 5 PVJGF => 3 KZRTJ
@@ -88,15 +89,17 @@ while True:
             lookingFor = elem
             break
 
-    print("Looking for ", lookingFor)
+    # print("Looking for ", lookingFor)
     reaction = reactions[lookingFor]
 
+    scale = have[elem] * -1.0 / reaction[0]
+
     # credit the outcome of the reaction
-    have[lookingFor] += reaction[0]
+    have[lookingFor] += reaction[0] * scale
 
     # check ingredients
     for ing, qty in reaction[1]:
-        have[ing] -= qty
+        have[ing] -= qty * scale
 
     # check if done
     done = True
@@ -108,4 +111,4 @@ while True:
     if done:
         break
 
-print(have["ORE"])
+print(int(1000000000000 / have["ORE"]))
