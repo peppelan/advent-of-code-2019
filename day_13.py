@@ -120,18 +120,35 @@ done = queue.Queue()
 input = queue.Queue()
 
 Thread(target=computer, args=[memory, input, out, done]).start()
-done.get()
 
 objects = {}
+score = 0
+ball = None
+paddle = (21, 24)
 
-while not out.empty():
+while done.empty() or not out.empty():
+
     x, y, id = out.get(), out.get(), out.get()
-    objects[(x, y)] = id
 
-blockCount = 0
+    if (x, y) == (-1, 0):
+        score = id
+        # print("Score:", score)
+    else:
+        objects[(x, y)] = id
 
-for position in objects:
-    if objects[position] == 2:
-        blockCount += 1
+        if id == 3:
+            paddle = (x, y)
+            # print("Paddle:", paddle)
+        elif id == 4:
+            ball = (x, y)
+            # print("Ball:", ball)
+            if ball[0] > paddle[0]:
+                input.put(1)
+            elif ball[0] < paddle[0]:
+                input.put(-1)
+            else:
+                input.put(0)
+        elif id == 0:
+            objects.pop((x,y))
 
-print(blockCount)
+print(score)
