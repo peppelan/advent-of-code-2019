@@ -147,7 +147,7 @@ while not toVisit.empty():
     elif resp == 1:
         board[position] = '.'
     elif resp == 2:
-        board[position] = 'T'
+        board[position] = 'O'
 
     # print(board)
 
@@ -177,6 +177,8 @@ for elem in board:
     if elem[1] > maxC:
         maxC = elem[1]
 
+position = None
+
 # print the board
 for r in range(minR, maxR + 1):
     for c in range(minC, maxC + 1):
@@ -185,13 +187,17 @@ for r in range(minR, maxR + 1):
         elif (r, c) not in board:
             print(" ", end='')
         else:
-            print(board[(r,c)], end='')
+            char = board[(r,c)]
+            print(char, end='')
+            if char == 'O':
+                position = (r,c)
     print()
 
 # find the shortest path (BFS)
-position = (0,0)
+print(position)
 path = queue.Queue()
 visited = set()
+farthest = 0
 
 # to debug
 # board[(-4,8)] = 'T'
@@ -203,9 +209,10 @@ while not path.empty():
         continue
 
     visited.add(newPos)
-
-    if board[newPos] == 'T':
-        print("Found at distance", newDistance)
+    if newDistance > farthest:
+        farthest = newDistance
 
     for direction in directions:
         path.put(((newPos[0] + direction[0], newPos[1] + direction[1]), newDistance + 1))
+
+print(farthest)
