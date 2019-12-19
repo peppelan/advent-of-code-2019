@@ -120,21 +120,33 @@ out = queue.Queue()
 done = queue.Queue()
 input = queue.Queue()
 
-count = 0
+def isOne(position):
+    # print("Checking", position)
+    input.put(position[0])
+    input.put(position[1])
 
-for i in range(50):
-    for j in range(50):
-        input.put(j)
-        input.put(i)
+    Thread(target=computer, args=[memory, input, out, done]).start()
+    done.get()
+    value = out.get()
+    return value == 1
 
-        Thread(target=computer, args=[memory, input, out, done]).start()
-        done.get()
-        value = out.get()
 
-        print(value, end='')
-        if value == 1:
-            count += 1
+topRight = (100, 0)
+while True:
+    # find next topRight
+    topRight = (topRight[0] + 1, topRight[1])
+    # print(topRight)
 
-    print()
+    while True:
+        if not isOne(topRight):
+            topRight = (topRight[0], topRight[1] + 1)
+        else:
+            break
 
-print(count)
+    # check if it's the top-right of a 100x100 square
+    topLeft = (topRight[0] - 99, topRight[1])
+    bottomLeft = (topLeft[0], topLeft[1] + 99)
+
+    if isOne(topRight) and isOne(bottomLeft):
+        print(topLeft[0] * 10000 + topLeft[1])
+        break
