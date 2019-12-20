@@ -107,21 +107,65 @@ ZZ............#.#.#.#...#.#                                                     
   #.#.....#...#...#.#...#.....#...#.#.#...#...#...#.......#...#.....#.#.#.......#.........#.#.#...#.#.#...#  
   #############################.#########.###.#########.#####.###.#######.###.#############################  
                                B         R   A         R     E   E       A   X                               
-                               H         U   U         K     R   G       A   Z                                    
-
+                               H         U   U         K     R   G       A   Z                            
 """
 
+input2 = """
+             Z L X W       C                 
+             Z P Q B       K                 
+  ###########.#.#.#.#######.###############  
+  #...#.......#.#.......#.#.......#.#.#...#  
+  ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###  
+  #.#...#.#.#...#.#.#...#...#...#.#.......#  
+  #.###.#######.###.###.#.###.###.#.#######  
+  #...#.......#.#...#...#.............#...#  
+  #.#########.#######.#.#######.#######.###  
+  #...#.#    F       R I       Z    #.#.#.#  
+  #.###.#    D       E C       H    #.#.#.#  
+  #.#...#                           #...#.#  
+  #.###.#                           #.###.#  
+  #.#....OA                       WB..#.#..ZH
+  #.###.#                           #.#.#.#  
+CJ......#                           #.....#  
+  #######                           #######  
+  #.#....CK                         #......IC
+  #.###.#                           #.###.#  
+  #.....#                           #...#.#  
+  ###.###                           #.#.#.#  
+XF....#.#                         RF..#.#.#  
+  #####.#                           #######  
+  #......CJ                       NM..#...#  
+  ###.#.#                           #.###.#  
+RE....#.#                           #......RF
+  ###.###        X   X       L      #.#.#.#  
+  #.....#        F   Q       P      #.#.#.#  
+  ###.###########.###.#######.#########.###  
+  #.....#...#.....#.......#...#.....#.#...#  
+  #####.#.###.#######.#######.###.###.#.#.#  
+  #.......#.......#.#.#.#.#...#...#...#.#.#  
+  #####.###.#####.#.#.#.#.###.###.#.###.###  
+  #.......#.....#.#...#...............#...#  
+  #############.#.#.###.###################  
+               A O F   N                     
+               A A D   M                     
+"""
 
 import queue
+import copy
 
 i,j = 0,0
 
 maze = set()
 letters = {}
 
+maxJ = 0
+
 for line in input.split('\n'):
     j = 0
     for c in line:
+        if j > maxJ:
+            maxJ = j
+
         if c == '.':
             maze.add((i,j))
         elif c.isupper():
@@ -134,18 +178,22 @@ for line in input.split('\n'):
 portals = {}
 
 for elem in maze:
-    # up
+    # up OK
     if (elem[0]-1, elem[1]) in letters:
         code = letters[(elem[0]-2, elem[1])] + letters[(elem[0]-1, elem[1])]
-    # left
+        external = elem[0]-2 == 1
+    # left OK
     elif (elem[0], elem[1]-1) in letters:
         code = letters[(elem[0], elem[1]-2)] + letters[(elem[0], elem[1]-1)]
-    # down
+        external = elem[1] - 2 == 0
+    # down OK
     elif (elem[0]+1, elem[1]) in letters:
         code = letters[(elem[0]+1, elem[1])] + letters[(elem[0]+2, elem[1])]
-    # right
+        external = elem[0] == i - 4
+    # right OK
     elif (elem[0], elem[1]+1) in letters:
         code = letters[(elem[0], elem[1]+1)] + letters[(elem[0], elem[1]+2)]
+        external = elem[1] == maxJ - 2
     else:
         continue
 
@@ -154,37 +202,62 @@ for elem in maze:
     else:
         portals[code].append(elem)
 
-    portals[elem] = code
+    portals[elem] = (code, external)
 
-start, dest = portals['AA'][0], portals['ZZ'][0]
+# externals = []
+# internals = []
+#
+# for pos in portals:
+#     portal = portals[pos]
+#     if len(portal) == 2 and portal[1] == True:
+#         externals.append(portal[0])
+#     if len(portal) == 2 and portal[1] == False:
+#         internals.append(portal[0])
+#
+# print(externals)
+# print(internals)
+# exit(0)
+
+
+start, dest = (portals['AA'][0], 0), (portals['ZZ'][0], 0)
 
 visited = {start}
 toVisit = queue.Queue()
-toVisit.put((start, 0))
+toVisit.put((start, 0, [('AA', 0)]))
 
 while True:
-    pos, distance = toVisit.get()
+    (pos, layer), distance, path = toVisit.get()
 
-    if pos == dest:
+    if (pos, layer) == dest:
         print("Min distance", distance)
+        print(path)
         break
 
     for direction in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
         newDistance = distance + 1
         newPos = (pos[0] + direction[0], pos[1] + direction[1])
+        newLayer = layer
+        newPath = path
 
-        if newPos in portals:
-            portal = portals[newPos]
+        if newPos in portals and (layer != 0 or portals[newPos][1] is False):
+            portal, external = portals[newPos]
             destinations = portals[portal]
 
             for destination in destinations:
                 if destination != newPos:
                     newPos = destination
                     newDistance += 1
+                    if external:
+                        newLayer -= 1
+                    else:
+                        newLayer += 1
                     break
 
-        if newPos in maze and newPos not in visited:
-            visited.add(newPos)
-            toVisit.put((newPos, newDistance))
+            newPath = copy.copy(path)
+            newPath.append((portal, newLayer))
+
+        if newPos in maze and (newPos, newLayer) not in visited:
+            visited.add((newPos, newLayer))
+            toVisit.put(((newPos, newLayer), newDistance, newPath))
 
 
