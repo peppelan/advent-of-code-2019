@@ -119,6 +119,8 @@ out = queue.Queue()
 done = queue.Queue()
 input = queue.Queue()
 
+
+# jump if (there is any hole in a, b, or c) and the target position D is filled and (E is filled or an hypothetical jump (H) would be OK)
 instructions = """NOT A T
 OR T J
 NOT B T
@@ -126,7 +128,11 @@ OR T J
 NOT C T
 OR T J
 AND D J
-WALK
+NOT J T
+OR E T
+OR H T
+AND T J
+RUN
 """
 
 Thread(target=computer, args=[memory, input, out, done]).start()
