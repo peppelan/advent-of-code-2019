@@ -102,37 +102,17 @@ deal with increment 19
 cut -937
 deal with increment 42"""
 
+position = 2019
+
 for action in input.split('\n'):
+    print('.', end='')
     if "deal with increment" in action:
         increment = int(action[20:])
-
-        newDeck = {}
-        i = 0
-        while len(newDeck) < totalCards:
-            newDeck[(i*increment) % totalCards] = deck[i]
-            i+=1
-
-        deck = newDeck
+        position = (position*increment) % totalCards
     elif "deal into new stack" in action:
-        newDeck = {}
-        for i in range(totalCards):
-            newDeck[totalCards-i-1] = deck[i]
-        deck = newDeck
+        position = totalCards - position - 1
     elif "cut" in action:
         cut = int(action[4:])
-        newDeck = {}
+        position = (position - cut) % totalCards
 
-        if cut < 0:
-            cut = totalCards + cut
-
-        for i in range(cut):
-            newDeck[totalCards - cut + i] = deck[i]
-        for i in range(cut, totalCards):
-            newDeck[i - cut] = deck[i]
-
-        deck = newDeck
-
-for i in range(totalCards):
-    if deck[i] == 2019:
-        print(i)
-        break
+print(position)
