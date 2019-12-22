@@ -1,5 +1,5 @@
 totalCards = 10007
-deck = {x: x for x in range(totalCards)}
+# deck = {x: x for x in range(totalCards)}
 
 input = """deal into new stack
 deal with increment 21
@@ -104,15 +104,25 @@ deal with increment 42"""
 
 position = 2019
 
-for action in input.split('\n'):
-    print('.', end='')
-    if "deal with increment" in action:
-        increment = int(action[20:])
-        position = (position*increment) % totalCards
-    elif "deal into new stack" in action:
-        position = totalCards - position - 1
-    elif "cut" in action:
-        cut = int(action[4:])
-        position = (position - cut) % totalCards
+seen = {position}
 
-print(position)
+for i in range(1):
+    if i != 0 and position in seen:
+        print(i)
+        break
+    else:
+        seen.add(position)
+
+    for action in input.split('\n'):
+        # print('.', end='')
+        if "deal with increment" in action:
+            increment = int(action[20:])
+            position *= increment
+        elif "deal into new stack" in action:
+            position *= -1
+            position -= 1
+        elif "cut" in action:
+            cut = int(action[4:])
+            position -= cut
+
+print(position%totalCards)
