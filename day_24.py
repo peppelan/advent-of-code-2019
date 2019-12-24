@@ -15,7 +15,21 @@ for line in input.split('\n'):
 rows = len(maze)
 cols = len(maze[0])
 
+biodiversity = 0
+for i in range(rows):
+    for j in range(cols):
+        if maze[i][j]:
+            biodiversity += 2 ** ((i * cols) + j)
+maze = biodiversity
+
+def get(biodiversity, i, j):
+    return (biodiversity & int(2 ** ((i*cols) + j))) != 0
+
+def toggle(biodiversity, i, j):
+    return biodiversity ^ int(2 ** ((i*cols) + j))
+
 biodiversities = set()
+
 
 while True:
     # evolve
@@ -28,10 +42,10 @@ while True:
                 ni = i + dir[0]
                 nj = j + dir[1]
 
-                if 0 <= ni < rows and 0 <= nj < cols and maze[ni][nj]:
+                if 0 <= ni < rows and 0 <= nj < cols and get(biodiversity, ni, nj):
                     neighs += 1
 
-            if maze[i][j]:
+            if get(biodiversity, i, j):
                 if neighs != 1:
                     mutations.add((i,j))
             else:
@@ -39,23 +53,17 @@ while True:
                     mutations.add((i,j))
 
     for i,j in mutations:
-        maze[i][j] = not maze[i][j]
+        biodiversity = toggle(biodiversity, i, j)
+        # print("mutating", i, j)
 
-    for i in range(rows):
-        for j in range(cols):
-            if maze[i][j]:
-                print('#', end='')
-            else:
-                print('.', end='')
-        print()
-    print()
-
-    # compute biodiversity
-    biodiversity = 0
-    for i in range(rows):
-        for j in range(cols):
-            if maze[i][j]:
-                biodiversity += 2 ** ((i*cols) + j)
+    # for i in range(rows):
+    #     for j in range(cols):
+    #         if get(biodiversity, i, j):
+    #             print('#', end='')
+    #         else:
+    #             print('.', end='')
+    #     print()
+    # print()
 
     if biodiversity in biodiversities:
         print(biodiversity)
